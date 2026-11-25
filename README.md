@@ -7,6 +7,17 @@ Android EGL на GPU, а не программно (llvmpipe) во вложен�
 точка входа `.so` для приложения и подключение к god-termux — в работе. Подробности — в ветке `android-native`
 репозитория [god-termux/cosmic-comp](https://github.com/god-termux/cosmic-comp).
 
+## Для какого устройства написано
+
+Весь функционал написан и проверяется под одно устройство:
+
+- ядро Linux `6.12.69-android16-6-g014ca48a80ee-ab15889839-4k` (aarch64);
+- Android 16;
+- прошивка `BP2A.250605.031.A3` (модель `2510DRA23E`, SoC MediaTek MT6789, GPU Mali-G57).
+
+В будущем код будет адаптироваться под другие ядра, версии Android и прошивки. Пока на других устройствах
+работоспособность не гарантируется.
+
 ## Что здесь
 
 - `scripts/build-libs.sh` — собирает под bionic `libudev-zero`, `libinput` 1.28.1, `libdisplay-info` 0.3.0.
