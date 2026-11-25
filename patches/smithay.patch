@@ -1,18 +1,26 @@
 diff -ruN a/src/backend/egl/ffi.rs b/src/backend/egl/ffi.rs
---- a/src/backend/egl/ffi.rs	2026-11-25 12:13:51.029004228 +0200
-+++ b/src/backend/egl/ffi.rs	2026-11-25 12:13:51.285004228 +0200
-@@ -145,7 +145,7 @@
+--- a/src/backend/egl/ffi.rs	2026-11-25 17:22:14.294382547 +0200
++++ b/src/backend/egl/ffi.rs	2026-11-25 17:22:14.686382547 +0200
+@@ -145,7 +145,15 @@
      use std::sync::{LazyLock, Once};
  
      pub static LIB: LazyLock<Library> =
 -        LazyLock::new(|| unsafe { Library::new("libEGL.so.1") }.expect("Failed to load LibEGL"));
-+        LazyLock::new(|| unsafe { Library::new("libEGL.so.1").or_else(|_| Library::new("libEGL.so")) }.expect("Failed to load LibEGL"));
++        LazyLock::new(|| unsafe { {
++            // Android: по имени dlopen находит по RUNPATH libEGL.so из Termux (Mesa без платформы Android),
++            // поэтому сначала берём системный EGL по абсолютному пути
++            #[cfg(target_os = "android")]
++            let first = Library::new("/system/lib64/libEGL.so");
++            #[cfg(not(target_os = "android"))]
++            let first = Library::new("libEGL.so.1");
++            first.or_else(|_| Library::new("libEGL.so.1")).or_else(|_| Library::new("libEGL.so"))
++        } }.expect("Failed to load LibEGL"));
  
      pub static LOAD: Once = Once::new();
      pub static DEBUG: Once = Once::new();
 diff -ruN a/src/backend/winit/mod.rs b/src/backend/winit/mod.rs
---- a/src/backend/winit/mod.rs	2026-11-25 12:13:51.061004228 +0200
-+++ b/src/backend/winit/mod.rs	2026-11-25 12:13:51.313004228 +0200
+--- a/src/backend/winit/mod.rs	2026-11-25 17:22:14.358382547 +0200
++++ b/src/backend/winit/mod.rs	2026-11-25 17:22:14.746382547 +0200
 @@ -29,6 +29,7 @@
  use wayland_egl as wegl;
  use winit::dpi::LogicalPosition;
