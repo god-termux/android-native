@@ -1,0 +1,12 @@
+diff -ruN a/src/platform/android.rs b/src/platform/android.rs
+--- a/src/platform/android.rs	2026-11-25 12:13:50.313004228 +0200
++++ b/src/platform/android.rs	2026-11-25 12:13:50.357004228 +0200
+@@ -6,7 +6,7 @@
+ use raw_window_handle::HasDisplayHandle;
+ use std::{borrow::Cow, error::Error};
+ 
+-pub fn connect<W: HasDisplayHandle>(
++pub fn connect<W: HasDisplayHandle + ?Sized>(
+     _window: &W,
+ ) -> Result<Clipboard, Box<dyn Error>> {
+     Clipboard::new()

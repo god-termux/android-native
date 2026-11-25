@@ -1,0 +1,34 @@
+diff -ruN a/src/backend/egl/ffi.rs b/src/backend/egl/ffi.rs
+--- a/src/backend/egl/ffi.rs	2026-11-25 12:13:51.029004228 +0200
++++ b/src/backend/egl/ffi.rs	2026-11-25 12:13:51.285004228 +0200
+@@ -145,7 +145,7 @@
+     use std::sync::{LazyLock, Once};
+ 
+     pub static LIB: LazyLock<Library> =
+-        LazyLock::new(|| unsafe { Library::new("libEGL.so.1") }.expect("Failed to load LibEGL"));
++        LazyLock::new(|| unsafe { Library::new("libEGL.so.1").or_else(|_| Library::new("libEGL.so")) }.expect("Failed to load LibEGL"));
+ 
+     pub static LOAD: Once = Once::new();
+     pub static DEBUG: Once = Once::new();
+diff -ruN a/src/backend/winit/mod.rs b/src/backend/winit/mod.rs
+--- a/src/backend/winit/mod.rs	2026-11-25 12:13:51.061004228 +0200
++++ b/src/backend/winit/mod.rs	2026-11-25 12:13:51.313004228 +0200
+@@ -29,6 +29,7 @@
+ use wayland_egl as wegl;
+ use winit::dpi::LogicalPosition;
+ use winit::event::TouchPhase;
++#[cfg(not(target_os = "android"))]
+ use winit::platform::scancode::PhysicalKeyExtScancode;
+ use winit::raw_window_handle::{HasWindowHandle, RawWindowHandle};
+ use winit::{
+@@ -566,7 +567,10 @@
+                     }
+                 };
+ 
++                #[cfg(not(target_os = "android"))]
+                 let scancode = event.physical_key.to_scancode().unwrap_or(0);
++                #[cfg(target_os = "android")]
++                let scancode = 0u32;
+                 let event = InputEvent::Keyboard {
+                     event: WinitKeyboardInputEvent {
+                         time: self.timestamp(),

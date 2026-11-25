@@ -1,0 +1,26 @@
+diff -ruN a/src/lib.rs b/src/lib.rs
+--- a/src/lib.rs	2026-11-25 12:13:50.753004228 +0200
++++ b/src/lib.rs	2026-11-25 12:13:50.797004228 +0200
+@@ -59,6 +59,7 @@
+ #[cfg(any(target_os = "linux", target_os = "android"))]
+ use rustix::fs::{memfd_create, MemfdFlags};
+ use rustix::io::Errno;
++#[cfg(not(any(target_os = "linux", target_os = "android")))]
+ use rustix::shm;
+ #[cfg(any(target_os = "linux", target_os = "android"))]
+ use std::ffi::CStr;
+@@ -450,6 +451,14 @@
+         }
+     }
+ 
++    #[cfg(target_os = "android")]
++    return Err(std::io::Error::new(std::io::ErrorKind::Unsupported, "memfd_create unavailable"));
++    #[cfg(not(target_os = "android"))]
++    shm_fallback()
++}
++
++#[cfg(not(target_os = "android"))]
++fn shm_fallback() -> IoResult<OwnedFd> {
+     // Fallback to using shm_open.
+     let sys_time = SystemTime::now();
+     let mut mem_file_handle = format!(

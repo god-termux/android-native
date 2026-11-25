@@ -1,0 +1,13 @@
+
+[patch."https://github.com/pop-os/window_clipboard.git"]
+window_clipboard = { path = "../android-native/deps/window_clipboard" }
+mime = { path = "../android-native/deps/window_clipboard/mime" }
+dnd = { path = "../android-native/deps/window_clipboard/dnd" }
+clipboard_x11 = { path = "../android-native/deps/window_clipboard/x11" }
+clipboard_wayland = { path = "../android-native/deps/window_clipboard/wayland" }
+
+[patch."https://github.com/pop-os/softbuffer"]
+softbuffer = { path = "../android-native/deps/softbuffer" }
+
+[patch.crates-io]
+wayland-cursor = { path = "../android-native/deps/wayland-cursor" }
