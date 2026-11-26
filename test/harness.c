@@ -27,6 +27,7 @@ static void (*f_touch)(unsigned, unsigned long long, double, double);
 static void (*f_key)(unsigned, _Bool);
 static void (*f_setwin)(void*);
 static void (*f_lost)(void);
+static void (*f_scale)(double);
 static int (*g_rnew)(int, int, int, int, void**); static int (*g_rwin)(void*, void**);
 static int out;
 // режим окна (HARNESS_WINDOW=1): ANativeWindow из AImageReader, как у SurfaceView; потребитель забирает кадры
@@ -74,7 +75,7 @@ int main(int argc, char** argv) {
   if (!h) { say("dlopen %s: %s\n", lib, dlerror()); return 3; }
 #define SYM(v, n) v = dlsym(h, n); if (!v) { say("нет символа %s\n", n); return 4; }
   SYM(f_start, "cosmic_start") SYM(f_stop, "cosmic_stop") SYM(f_shot, "cosmic_screenshot") SYM(f_motion, "cosmic_pointer_motion")
-  SYM(f_setwin, "cosmic_set_window") SYM(f_lost, "cosmic_window_lost") SYM(f_button, "cosmic_pointer_button") SYM(f_scroll, "cosmic_scroll") SYM(f_touch, "cosmic_touch") SYM(f_key, "cosmic_key")
+  f_scale = dlsym(h, "cosmic_set_scale"); SYM(f_setwin, "cosmic_set_window") SYM(f_lost, "cosmic_window_lost") SYM(f_button, "cosmic_pointer_button") SYM(f_scroll, "cosmic_scroll") SYM(f_touch, "cosmic_touch") SYM(f_key, "cosmic_key")
   (void)home;
   if (getenv("HARNESS_WINDOW")) {
     int W = 2392, H = 1080; const char* hs = getenv("COSMIC_HEADLESS"); if (hs) sscanf(hs, "%dx%d", &W, &H);
@@ -110,6 +111,7 @@ int main(int argc, char** argv) {
     else if (!strcmp(c, "scroll")) { sscanf(line, "%*s %lf", &a); f_scroll(a); }
     else if (!strcmp(c, "touch")) { sscanf(line, "%*s %u %llu %lf %lf", &k, &id, &a, &b); f_touch(k, id, a, b); }
     else if (!strcmp(c, "key")) { sscanf(line, "%*s %u %u", &k, &pr); f_key(k, pr); }
+    else if (!strcmp(c, "scale")) { sscanf(line, "%*s %lf", &a); if (f_scale) { f_scale(a); say("масштаб %.2f\n", a); } else say("нет cosmic_set_scale в библиотеке\n"); }
     else if (!strcmp(c, "lost")) { f_lost(); say("окно потеряно\n"); }
     else if (!strcmp(c, "newwin")) {   // новое окно (как при повторном открытии экрана): новый AImageReader
       void* nr = NULL; void* nw = NULL;
