@@ -11,11 +11,15 @@ export PRE='mkdir -p "$T/xdg"; env FHS_DEBIAN=1 XDG_RUNTIME_DIR="$T/xdg" "'$D'/u
 ADDR="unix:path=$T/xdg/bus"
 # конфиг панели: добавить апплет экранной клавиатуры (как это делает лаунчер)
 CFG=$T/home/.config/cosmic/com.system76.CosmicPanel.Panel/v1
-export PRE="$PRE; mkdir -p \"$CFG\"; sed 's/\"com.system76.CosmicAppletInputSources\"/\"com.system76.CosmicAppletOsk\",\"com.system76.CosmicAppletInputSources\"/' $D/usr/share/cosmic/com.system76.CosmicPanel.Panel/v1/plugins_wings > \"$CFG/plugins_wings\""
-ENVP="env FHS_DEBIAN=1 NO_AT_BRIDGE=1 DBUS_SESSION_BUS_ADDRESS=$ADDR XDG_CONFIG_HOME=$T/home/.config XDG_DATA_DIRS=$D/usr/share XKB_CONFIG_ROOT=$D/usr/share/X11/xkb GDK_BACKEND=wayland"
+# автопоказ клавиатуры при фокусе в текстовом поле (настройка-состояние cosmic-osk)
+OSKS=$T/home/.local/state/cosmic/com.system76.CosmicOSK/v1
+export PRE="$PRE; mkdir -p \"$OSKS\"; printf true > \"$OSKS/ime_activation\"; mkdir -p \"$CFG\"; sed 's/\"com.system76.CosmicAppletInputSources\"/\"com.system76.CosmicAppletOsk\",\"com.system76.CosmicAppletInputSources\"/' $D/usr/share/cosmic/com.system76.CosmicPanel.Panel/v1/plugins_wings > \"$CFG/plugins_wings\""
+ENVP="env FHS_DEBIAN=1 NO_AT_BRIDGE=1 DBUS_SESSION_BUS_ADDRESS=$ADDR XDG_CONFIG_HOME=$T/home/.config XDG_STATE_HOME=$T/home/.local/state XDG_DATA_DIRS=$D/usr/share XKB_CONFIG_ROOT=$D/usr/share/X11/xkb GDK_BACKEND=wayland RUST_LOG=${CRL:-warn}"
 ARGS=()
-for c in cosmic-settings-daemon cosmic-bg cosmic-notifications cosmic-panel cosmic-osd; do
+for c in cosmic-settings-daemon cosmic-bg cosmic-notifications cosmic-panel cosmic-osd cosmic-osk; do
   [ -x "$D/usr/bin/$c" ] && ARGS+=(-c "sleep $([ $c = cosmic-panel ] && echo 4 || echo 1); $ENVP $D/usr/bin/$c")
 done
+# OSK_CMD: подкоманда cosmic-osk (show/hide), запускаемая через OSK_DELAY секунд после старта
+[ -n "${OSK_CMD:-}" ] && ARGS+=(-c "sleep ${OSK_DELAY:-30}; $ENVP $D/usr/bin/cosmic-osk $OSK_CMD")
 "$R/android-native/test/run.sh" "${ARGS[@]}" "wait $WAIT" "shot $NAME" "$@"
 [ -f "$T/dbus.pid" ] && kill "$(cat "$T/dbus.pid")" 2>/dev/null
