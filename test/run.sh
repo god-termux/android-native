@@ -9,6 +9,7 @@ T=${T:-$TMPDIR/ct}
 CLIENTS=()
 while [ "$1" = "-c" ]; do CLIENTS+=("$2"); shift 2; done
 rm -rf "$T"; mkdir -p "$T/xdg" "$T/home"
+[ -n "$PRE" ] && eval "$PRE"
 cp "$SO" "$T/comp.so"
 patchelf --set-rpath "$R/.termux/cosmic-lib:/data/data/com.termux/files/usr/lib" "$T/comp.so"
 SHOTS=()
