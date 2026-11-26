@@ -1,0 +1,14 @@
+[package]
+name = "god-android-bridge"
+version = "0.1.0"
+edition = "2021"
+description = "D-Bus мост Android -> COSMIC: UPower и NetworkManager из данных мода xfcestatus (god-status)"
+
+[dependencies]
+zbus = "6"
+tokio = { version = "1", features = ["rt", "macros", "time", "sync"] }
+
+[profile.release]
+opt-level = "s"
+lto = true
+strip = true
